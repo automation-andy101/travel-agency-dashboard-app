@@ -142,9 +142,9 @@ export const RIGHT_CONFETTI = {
   origin: { x: 1, y: 1 },
 };
 
-export const user = { name: 'Andrew' };
+const user = { name: 'Andrew' };
 
-export const dashboardStats = {
+const dashboardStats = {
   totalUsers: 12450,
   usersJoined: {
     currentMonth: 218,
@@ -162,7 +162,7 @@ export const dashboardStats = {
   }
 }
 
-export const allTrips = [
+const allTrips = [
   {
     id: 1,
     name: "Tropical Rewind",

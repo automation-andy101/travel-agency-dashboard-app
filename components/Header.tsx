@@ -26,7 +26,6 @@ const Header = ({ title, description }: Props) => {
                 >
                     {description}
                 </p>
-                <p>{description}</p>
             </article>
         </div>
     )
