@@ -1,6 +1,10 @@
 import {Header} from "../../../components";
 import {ComboBoxComponent} from "@syncfusion/ej2-react-dropdowns";
 import type { Route } from './+types/create-trip';
+import {comboBoxItems, selectItems} from "~/constants";
+import {formatKey} from "~/lib/utils";
+import {LayerDirective, LayersDirective, MapsComponent} from "@syncfusion/ej2-react-maps";
+import {useState} from "react";
 
 export const loader = async () => {
     const response = await fetch('https://restcountries.com/v3.1/all');
@@ -8,7 +12,7 @@ export const loader = async () => {
     console.log(data);
 
     return data.map((country: any) => ({
-        name: country.flag + country.name.common,
+        name: country.flag + " " + country.name.common,
         coordinates: country.latlng,
         value: country.name.common,
         openStreetMap: country.maps?.openStreetMap,
@@ -16,14 +20,35 @@ export const loader = async () => {
 }
 
 const CreateTrip = ({ loaderData }: Route.ComponentProps) => {
+    const countries = loaderData as Country[];
+
+    const [formData, setFormData] = useState<TripFormData>({
+        country: countries[0]?.name || '',
+        travelStyle: '',
+        interest: '',
+        budget: '',
+        duration: 0,
+        groupType: ''
+    });
+
     const handleSubmit = async () => {
     };
 
-    const countries = loaderData as Country[];
+    const handleChange = (key: keyof TripFormData, value: string | number) => {
+    }
+
     const countryData = countries.map((country: Country) => ({
         text: country.name,
         value: country.value
     }));
+
+    const mapData = [
+        {
+            country: formData.country,
+            color: '#EA382E',
+            coordinates: countries.find((c: Country) => c.name === formData.country)?.coordinates || []
+        }
+    ]
 
     return (
         <main className="flex flex-col gap-10 pb-20 wrapper">
@@ -41,7 +66,78 @@ const CreateTrip = ({ loaderData }: Route.ComponentProps) => {
                             fields={{ text: 'text', value: 'value'}}
                             placeholder="Select a Country"
                             className="combo-box"
+                            change={(e: { value: string | undefined })=> {
+                                if (e.value) {
+                                    handleChange('country', e.value)
+                                }
+                            }}
+                            allowFiltering={true}
+                            filtering={(e) => {
+                                const query = e.text.toLowerCase();
+                                e.updateData(
+                                    countries.filter((country) => country.name.toLowerCase().includes(query)).map(((country) => ({
+                                        text: country.name,
+                                        value: country.value
+                                    })))
+                                )
+                            }}
                         />
+                    </div>
+                    <div>
+                        <label htmlFor="duration">
+                            Duration
+                        </label>
+                        <input
+                            id="duration"
+                            name="duration"
+                            placeholder="Enter a number of days (5, 12 ... )"
+                            className="form-input placeholder:text-gray-100"
+                            onChange={(e) => handleChange('duration', Number(e.target.value))}
+                        />
+                    </div>
+
+                    {selectItems.map((key) => (
+                        <div key={key}>
+                            <label htmlFor={key}>{formatKey(key)}</label>
+
+                            <ComboBoxComponent
+                                id={key}
+                                dataSource={comboBoxItems[key].map((item) => ({
+                                        text: item,
+                                        value: item
+                                    }))}
+                                fields={{ text: 'text', value: 'value'}}
+                                placeholder={`Select ${formatKey(key)}`}
+                                change={(e: { value: string | undefined })=> {
+                                    if (e.value) {
+                                        handleChange(key, e.value)
+                                    }
+                                }}
+                                allowFiltering={true}
+                                filtering={(e) => {
+                                    const query = e.text.toLowerCase();
+                                    e.updateData(
+                                        comboBoxItems[key]
+                                            .filter((item) => item.toLowerCase().includes(query)).map(((item) => ({
+                                            text: item,
+                                            value: item
+                                        }))))}}
+                                className="combo-box"
+                            />
+                        </div>
+                    ))}
+
+                    <div>
+                        <label htmlFor="location">
+                            Location on the world map
+                        </label>
+                        <MapsComponent>
+                            <LayersDirective>
+                                <LayerDirective
+
+                                />
+                            </LayersDirective>
+                        </MapsComponent>
                     </div>
                 </form>
             </section>
